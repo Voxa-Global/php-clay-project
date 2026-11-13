@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD</title>
+    <link rel="stylesheet" href="./style.css">
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
@@ -41,25 +42,68 @@
                         echo "Something went wrong!";
                     }
                 }
+
+                if(isset($_POST['update'])){
+                    $fn = $_POST['firstname'];
+                    $ln = $_POST['lastname'];
+                    $dob = $_POST['dob'];
+                    $country = $_POST['country'];
+
+                    $id = $_GET['id'];
+
+                    $sql = "UPDATE student SET firstname='$fn', lastname='$ln', age='$dob', country='$country' WHERE id='$id'";
+                    $update = mysqli_query($con, $sql);
+
+                    if($update){
+                        echo "Student is updated successfully!";
+                    }else{
+                        echo "Something went wrong!";
+                    }
+                }
+            ?>
+
+            <?php
+                if(isset($_GET['id'])){
+                    $id = $_GET['id'];
+                    $sql = "SELECT * FROM student WHERE id = '$id'";
+                    $result = mysqli_query($con, $sql);
+                    $row = mysqli_fetch_assoc($result);
+
+                    if(empty($row)){
+                        $row = null;
+                        $row['firstname'] = '';
+                        $row['lastname'] = '';
+                        $row['age'] = '';
+                        $row['country'] = '';
+                        echo "<div class='alert alert-danger'>Student not found!</div>";
+                    }
+                }
             ?>
             <form action="" method="POST">
                 <div class="form-group">
                     <label for="fn">First name</label>
                     <input type="text" name="firstname" id="fn" placeholder="Enter the first name"
-                        class="form-control">
+                        class="form-control" value="<?php if(isset($_GET['id'])){ echo $row['firstname']; } ?>">
                 </div>
                 <div class="form-group">
                     <label for="ln">Last name</label>
                     <input type="text" name="lastname" id="ln" placeholder="Enter the last name"
-                        class="form-control">
+                        class="form-control" value="<?php if(isset($_GET['id'])){ echo $row['lastname']; } ?>">
                 </div>
                 <div class="form-group">
                     <label for="dob">Date of birth</label>
-                    <input type="date" name="dob" id="dob" class="form-control">
+                    <input type="date" name="dob" id="dob" class="form-control" value="<?php if(isset($_GET['id'])){ echo $row['age']; } ?>">
                 </div>
 
                 <div class="form-group">
-                    <label for="countrySelect" class="">Country</label>
+                    <label for="countrySelect" class="">Country</label> 
+                        <?php if(isset($_GET['id'])):?> 
+                            <?php if(empty($row)):?>
+                                <span class="badge badge-pill badge-success">
+                                    <?php echo $row['country'];?>
+                                </span> 
+                            <?php endif; ?>
+                        <?php endif; ?>
                     <select name="country" class="form-control" id="countrySelect">
                         <option value="">-- Select --</option>
                         <option value="RW">Rwanda</option>
@@ -73,7 +117,17 @@
                 </div>
 
                 <div class="form-group">
-                    <input type="submit" name="submit" value="Register" class="btn btn-block btn-primary">
+                    <?php 
+                        if(isset($_GET['id'])):?>
+                            <?php if(!empty($row)):?>
+                                <input type="submit" name="update" value="Update" class="cursor-disabled btn btn-block btn-success">
+                            <?php endif; ?>
+                        <?php else: ?>
+                        <input type="submit" name="submit" value="Register" class="btn btn-block btn-primary">
+                    <?php endif; ?>
+                    <?php if(isset($_GET['id'])): ?>
+                        <a href="index.php" class="btn btn-secondary mt-3">Cancel</a>
+                    <?php endif; ?>
                 </div>
             </form>
         </aside>
@@ -104,12 +158,12 @@
                             echo "<td>".$row['lastname']."</td>";
                             echo "<td>".$row['age']."</td>";
                             echo "<td>Age</td>";
-                            echo "<td>".$row['country']."</td>";
+                            echo "<td>".$row['country']."</td> ";
                             echo "<td>
-                                    <div class='action-form-group'>
-                                        <button type='button' class='btn btn-info'>Edit</button>
+                                    <div class='action-form-group btn btn-sm btn-group'>
+                                        <a href='index.php?id=".$row['id']."' type='button' class='btn btn-info'>Edit</a>
                                         <button type='button' class='btn btn-primary'>View</button>
-                                        <button type='button' class='btn btn-danger'>Delete</button>
+                                        <a href='delete.php?id=".$row['id']."' type='button' class='btn btn-danger'>Delete</a>
                                     </div>
                                 </td>";
                             echo "</tr>";
